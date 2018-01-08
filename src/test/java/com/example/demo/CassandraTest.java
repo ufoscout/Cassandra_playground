@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.utils.UUIDs;
 
 public class CassandraTest extends DemoApplicationTests {
@@ -114,12 +116,13 @@ public class CassandraTest extends DemoApplicationTests {
 	}
 
 	private Book findBookById(UUID id) {
-	    final StringBuilder sb = new StringBuilder("Select * from ")
-	    		.append(keyspace).append(".Books ")
-	    		.append("WHERE ID = ").append(id).append(";");
 
-	    final String query = sb.toString();
-	    final ResultSet rs = session.execute(query);
+		final Statement stmt = QueryBuilder.select()
+			.all()
+			.from(keyspace, "Books")
+			.where(QueryBuilder.eq("id", id));
+
+	    final ResultSet rs = session.execute(stmt);
 	    final Row one = rs.one();
 	    return new Book(
 	    		one.get("ID", UUID.class),
